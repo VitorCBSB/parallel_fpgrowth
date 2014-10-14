@@ -22,6 +22,10 @@ public:
 	FPTreeNode(std::shared_ptr<FPTreeNode> parent, Item item) :
 			parent(parent), item(item) {
 	}
+
+	void increment_item() {
+		item.increment();
+	}
 };
 
 typedef std::shared_ptr<FPTreeNode> FPTreeNodePtr;

@@ -10,16 +10,20 @@
 
 class Item {
 private:
-	int contagem = 1;
-	int valor;
+	int count = 1;
+	int value;
 
 public:
-	Item(int valor) :
-			valor(valor) {
+	Item(int value) :
+			value(value) {
+	}
+
+	void increment() {
+		count++;
 	}
 
 	bool operator<(const Item& outro) {
-		return valor < outro.valor;
+		return value < outro.value;
 	}
 };
 
