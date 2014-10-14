@@ -6,7 +6,13 @@
 //============================================================================
 
 #include <iostream>
+#include <stdlib.h>
 
-int main() {
+int main(int argc, char* argv[]) {
+	if (argc < 2) {
+		std::cout << "Uso: " << argv[0] << " arquivo_entrada" << std::endl;
+		exit(0);
+	}
+
 	return 0;
 }
