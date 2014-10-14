@@ -14,15 +14,31 @@ private:
 	int value;
 
 public:
+	Item() :
+			value(0) {
+	}
+
 	Item(int value) :
 			value(value) {
+	}
+
+	int get_value() const {
+		return value;
+	}
+
+	void set_value(int value) {
+		this->value = value;
+	}
+
+	int get_count() const {
+		return count;
 	}
 
 	void increment() {
 		count++;
 	}
 
-	bool operator<(const Item& outro) {
+	bool operator<(const Item& outro) const {
 		return value < outro.value;
 	}
 };

@@ -20,7 +20,7 @@ private:
 
 public:
 	FPTreeNode(std::shared_ptr<FPTreeNode> parent, Item item) :
-			parent(parent), item(item) {
+			item(item), parent(parent) {
 	}
 
 	void increment_item() {

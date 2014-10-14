@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include "FPTree.h"
 
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
