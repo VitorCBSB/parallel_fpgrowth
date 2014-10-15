@@ -39,7 +39,11 @@ public:
 	}
 
 	bool operator<(const Item& outro) const {
-		return value < outro.value;
+		return count < outro.count;
+	}
+
+	bool operator>(const Item& outro) const {
+		return count > outro.count;
 	}
 };
 
