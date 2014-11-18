@@ -99,13 +99,19 @@ private:
 					std::remove_if(transaction_items.begin(),
 							transaction_items.end(),
 							[&](const Item& item) {
-				return support_map[item.get_value()].get_count() < minimum_support;
-			});
+								return support_map[item.get_value()].get_count() < minimum_support;
+							});
 			transaction_items.erase(new_end, transaction_items.end());
+			std::sort(transaction_items.begin(), transaction_items.end(),
+					[&](const Item& a, const Item& b) {
+						return support_map[a.get_value()] > support_map[b.get_value()];
+					});
+
+			add_transaction(transaction_items);
 		}
 	}
 
-	void add_transaction(const std::vector& transaction) {
+	void add_transaction(const std::vector<Item>& transaction) {
 
 	}
 };
