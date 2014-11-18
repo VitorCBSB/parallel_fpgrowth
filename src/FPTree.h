@@ -120,7 +120,14 @@ private:
 				auto new_node = FPTreeNodePtr(new FPTreeNode(current_node, item));
 				new_node->set_parent(current_node);
 				current_node->add_child(new_node);
+
+				// Cria entrada na tabela de listas
 				header_table[item.get_value()].push_back(new_node);
+
+				// Setta o no corrente como filho
+				// Para proxima iteracao
+				current_node = new_node;
+
 				// Checar aqui se arvore tem mais de
 				// um caminho??
 			} else {
