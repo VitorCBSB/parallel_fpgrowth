@@ -28,6 +28,7 @@ private:
 	std::map<int, std::list<FPTreeNodePtr>> quick_reference_list;
 
 	std::vector<Item> support_vector;
+	std::map<int, Item> support_map;
 	int minimum_support;
 
 public:
@@ -48,7 +49,6 @@ public:
 
 private:
 	void count_frequent_items(FILE* fp) {
-		std::map<int, Item> support_map;
 		int read_item;
 
 		while (fscanf(fp, "%d", &read_item) != EOF) {
@@ -60,7 +60,8 @@ private:
 		for (auto& item : support_map) {
 			support_vector.push_back(item.second);
 		}
-		std::sort(support_vector.begin(), support_vector.end(), std::greater<Item>());
+		std::sort(support_vector.begin(), support_vector.end(),
+				std::greater<Item>());
 		auto new_end =
 				std::remove_if(support_vector.begin(), support_vector.end(),
 						[=] (const Item& item) {return item.get_count() < minimum_support;});
@@ -73,7 +74,8 @@ private:
 		const char* current;
 		int current_string = 0;
 
-		for (current = &line[0]; *current != '\n' && *current != '\0'; current++) {
+		for (current = &line[0]; *current != '\n' && *current != '\0';
+				current++) {
 			if (*current == ' ') {
 				current_string++;
 				continue;
@@ -92,7 +94,19 @@ private:
 		std::vector<char> line(512);
 		while (fgets(&line[0], 512, fp)) {
 			auto transaction_items = extract_items(std::string(&line[0]));
+			// Remove aqueles que nao tem o suporte minimo
+			auto new_end =
+					std::remove_if(transaction_items.begin(),
+							transaction_items.end(),
+							[&](const Item& item) {
+				return support_map[item.get_value()].get_count() < minimum_support;
+			});
+			transaction_items.erase(new_end, transaction_items.end());
 		}
+	}
+
+	void add_transaction(const std::vector& transaction) {
+
 	}
 };
 
