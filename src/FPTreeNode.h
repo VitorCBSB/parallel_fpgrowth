@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 #include "Item.h"
 
 class FPTreeNode {
