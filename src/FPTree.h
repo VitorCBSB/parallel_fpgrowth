@@ -25,7 +25,7 @@
 class FPTree {
 private:
 	FPTreeNodePtr root = FPTreeNodePtr(new FPTreeNode(nullptr, Item(0)));
-	std::map<int, std::list<FPTreeNodePtr>> quick_reference_list;
+	std::map<int, std::list<FPTreeNodePtr>> header_table;
 
 	std::vector<Item> support_vector;
 	std::map<int, Item> support_map;
@@ -112,7 +112,20 @@ private:
 	}
 
 	void add_transaction(const std::vector<Item>& transaction) {
+		auto current_node = root;
+		for (auto& item : transaction) {
+			auto child = current_node->get_child(item.get_value());
+			// Se nao existe ainda, cria.
+			if (child == nullptr) {
+				auto new_node = FPTreeNodePtr(new FPTreeNode(current_node, item));
+				new_node->set_parent(current_node);
+				current_node->add_child(new_node);
+				// Checar aqui se arvore tem mais de
+				// um caminho??
+			} else {
 
+			}
+		}
 	}
 };
 

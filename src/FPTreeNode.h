@@ -16,7 +16,7 @@ class FPTreeNode {
 private:
 	Item item;
 	std::shared_ptr<FPTreeNode> parent;
-	std::vector<std::shared_ptr<FPTreeNode>> children;
+	std::map<int, std::shared_ptr<FPTreeNode>> children;
 
 public:
 	FPTreeNode(std::shared_ptr<FPTreeNode> parent, Item item) :
@@ -26,6 +26,24 @@ public:
 	void increment_item() {
 		item.increment();
 	}
+
+	void add_child(std::shared_ptr<FPTreeNode> child) {
+		children[child->item.get_value()] = child;
+	}
+
+	void set_parent(std::shared_ptr<FPTreeNode> parent) {
+		this->parent = parent;
+	}
+
+	std::shared_ptr<FPTreeNode> get_child(int value) {
+		std::map<int, std::shared_ptr<FPTreeNode>>::iterator child_location =
+				children.find(value);
+		if (child_location == children.end()) {
+			return nullptr;
+		}
+		return (*child_location).second;
+	}
+
 };
 
 typedef std::shared_ptr<FPTreeNode> FPTreeNodePtr;
