@@ -52,7 +52,13 @@ public:
 
 	// TODO: continuar
 	std::vector<Pattern> fpgrowth() {
-		return std::vector<Pattern>();
+		std::vector<Pattern> result;
+		if (single_pathed) {
+			result = add_all_prefix_combinations();
+		} else {
+
+		}
+		return result;
 	}
 
 private:
@@ -147,6 +153,11 @@ private:
 				current_node = child;
 			}
 		}
+	}
+
+	// TODO: continuar
+	std::vector<Pattern> add_all_prefix_combinations() {
+		return std::vector<Pattern>();
 	}
 };
 
