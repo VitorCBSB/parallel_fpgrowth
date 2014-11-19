@@ -10,6 +10,7 @@
 
 #include "FPTreeNode.h"
 #include "Item.h"
+#include "Pattern.h"
 #include <iostream>
 #include <algorithm>
 #include <string.h>
@@ -49,7 +50,10 @@ public:
 		fclose(fp);
 	}
 
-
+	// TODO: continuar
+	std::vector<Pattern> fpgrowth() {
+		return std::vector<Pattern>();
+	}
 
 private:
 	void count_frequent_items(FILE* fp) {
