@@ -13,11 +13,14 @@
 
 class Pattern {
 private:
-	std::vector<Item> pattern_set;
+	std::vector<int> pattern_set;
+	int count = 1;
 
 public:
-	void add_item(Item item) {
-		pattern_set.push_back(item);
+	Pattern(std::vector<int> pattern_set) : pattern_set(pattern_set) {}
+
+	void increment() {
+		count++;
 	}
 };
 
