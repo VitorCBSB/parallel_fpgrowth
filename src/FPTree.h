@@ -89,10 +89,12 @@ private:
 		const char* current;
 		int current_string = 0;
 
+		strings.push_back(std::string());
 		for (current = &line[0]; *current != '\n' && *current != '\0';
 				current++) {
 			if (*current == ' ') {
 				current_string++;
+				strings.push_back(std::string());
 				continue;
 			}
 			strings[current_string].push_back(*current);

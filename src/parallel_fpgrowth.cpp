@@ -23,6 +23,12 @@ int main(int argc, char* argv[]) {
 	FPTree tree(minimum_support);
 
 	tree.build_fp_tree(file_name);
+	auto things = tree.fpgrowth();
+
+	for (auto& thing : things) {
+		thing.print();
+		std::cout << std::endl;
+	}
 
 	return 0;
 }
