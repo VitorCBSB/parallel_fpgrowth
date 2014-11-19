@@ -36,6 +36,10 @@ public:
 		this->parent = parent;
 	}
 
+	bool single_pathed() {
+		return children.size() <= 1;
+	}
+
 	std::shared_ptr<FPTreeNode> get_child(int value) {
 		std::map<int, std::shared_ptr<FPTreeNode>>::iterator child_location =
 				children.find(value);

@@ -17,10 +17,10 @@ int main(int argc, char* argv[]) {
 		exit(0);
 	}
 	auto file_name = std::string(argv[1]);
-	int temp;
-	sscanf(argv[2], "%d", &temp);
+	int minimum_support;
+	sscanf(argv[2], "%d", &minimum_support);
 
-	FPTree tree(temp);
+	FPTree tree(minimum_support);
 
 	tree.build_fp_tree(file_name);
 

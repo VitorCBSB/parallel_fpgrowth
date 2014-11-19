@@ -31,6 +31,8 @@ private:
 	std::map<int, Item> support_map;
 	int minimum_support;
 
+	bool single_pathed = true;
+
 public:
 	FPTree(int minimum_support) :
 			minimum_support(minimum_support) {
@@ -46,6 +48,8 @@ public:
 
 		fclose(fp);
 	}
+
+
 
 private:
 	void count_frequent_items(FILE* fp) {
@@ -124,12 +128,16 @@ private:
 				// Cria entrada na tabela de listas
 				header_table[item.get_value()].push_back(new_node);
 
+				// Setta flag de single path para falso
+				// Caso a arvore tenha galhos
+				if (single_pathed && !current_node->single_pathed()) {
+					single_pathed = false;
+				}
+
 				// Setta o no corrente como filho
 				// Para proxima iteracao
 				current_node = new_node;
 
-				// Checar aqui se arvore tem mais de
-				// um caminho??
 			} else {
 				child->increment_item();
 				current_node = child;
