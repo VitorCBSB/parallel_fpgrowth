@@ -54,7 +54,8 @@ public:
 	std::vector<Pattern> fpgrowth() {
 		std::vector<Pattern> result;
 		if (single_pathed) {
-			result = add_all_prefix_combinations(root);
+			result = add_all_prefix_combinations(root->get_first_child(),
+					std::vector<int>());
 		} else {
 			auto temp_result = multi_path_patterns();
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
@@ -132,7 +133,8 @@ private:
 			auto child = current_node->get_child(item.get_value());
 			// Se nao existe ainda, cria.
 			if (child == nullptr) {
-				auto new_node = FPTreeNodePtr(new FPTreeNode(current_node, item));
+				auto new_node = FPTreeNodePtr(
+						new FPTreeNode(current_node, item));
 				new_node->set_parent(current_node);
 				current_node->add_child(new_node);
 
@@ -161,9 +163,20 @@ private:
 		return std::vector<Pattern>();
 	}
 
-	// TODO: fazer algoritmo de single path
-	std::vector<Pattern> add_all_prefix_combinations(FPTreeNodePtr root) {
-		return std::vector<Pattern>();
+	std::vector<Pattern> add_all_prefix_combinations(FPTreeNodePtr root,
+			const std::vector<int>& prefix) {
+		std::vector<Pattern> result;
+		auto itemset = std::vector<int>(prefix);
+		itemset.push_back(root->get_item().get_value());
+		result.push_back(Pattern(itemset));
+
+		if (root->has_children()) {
+			auto temp_result = add_all_prefix_combinations(root->get_first_child(), itemset);
+			result.insert(result.end(), temp_result.begin(), temp_result.end());
+			temp_result = add_all_prefix_combinations(root->get_first_child(), prefix);
+			result.insert(result.end(), temp_result.begin(), temp_result.end());
+		}
+		return result;
 	}
 };
 

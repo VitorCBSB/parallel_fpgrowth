@@ -44,6 +44,17 @@ public:
 		return !children.empty();
 	}
 
+	Item get_item() {
+		return item;
+	}
+
+	std::shared_ptr<FPTreeNode> get_first_child() {
+		if (children.empty()) {
+			return nullptr;
+		}
+		return (*children.begin()).second;
+	}
+
 	std::shared_ptr<FPTreeNode> get_child(int value) {
 		std::map<int, std::shared_ptr<FPTreeNode>>::iterator child_location =
 				children.find(value);
