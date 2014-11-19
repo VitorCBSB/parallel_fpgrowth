@@ -9,6 +9,8 @@
 #define PATTERN_H_
 
 #include <vector>
+#include <iostream>
+#include <string>
 #include "Item.h"
 
 class Pattern {
@@ -23,6 +25,19 @@ public:
 
 	void increment() {
 		count++;
+	}
+
+	void print() {
+		std::cout << '[';
+		for (auto it = pattern_set.begin(); it != pattern_set.end(); it++) {
+			std::cout << *it;
+			if ((it + 1) == pattern_set.end()) {
+				std::cout << "";
+			} else {
+				std::cout << ", ";
+			}
+		}
+		std::cout << ']';
 	}
 };
 

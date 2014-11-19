@@ -57,8 +57,7 @@ public:
 			result = add_all_prefix_combinations(root->get_first_child(),
 					std::vector<int>());
 		} else {
-			auto temp_result = multi_path_patterns();
-			result.insert(result.end(), temp_result.begin(), temp_result.end());
+			result = multi_path_patterns();
 		}
 		return result;
 	}
