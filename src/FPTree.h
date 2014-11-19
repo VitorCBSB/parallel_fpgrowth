@@ -54,9 +54,10 @@ public:
 	std::vector<Pattern> fpgrowth() {
 		std::vector<Pattern> result;
 		if (single_pathed) {
-			result = add_all_prefix_combinations();
+			result = add_all_prefix_combinations(root);
 		} else {
-
+			auto temp_result = multi_path_patterns();
+			result.insert(result.end(), temp_result.begin(), temp_result.end());
 		}
 		return result;
 	}
@@ -155,8 +156,13 @@ private:
 		}
 	}
 
-	// TODO: continuar
-	std::vector<Pattern> add_all_prefix_combinations() {
+	// TODO: fazer algoritmo de multi path
+	std::vector<Pattern> multi_path_patterns() {
+		return std::vector<Pattern>();
+	}
+
+	// TODO: fazer algoritmo de single path
+	std::vector<Pattern> add_all_prefix_combinations(FPTreeNodePtr root) {
 		return std::vector<Pattern>();
 	}
 };

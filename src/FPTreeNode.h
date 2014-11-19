@@ -40,6 +40,10 @@ public:
 		return children.size() <= 1;
 	}
 
+	bool has_children() {
+		return !children.empty();
+	}
+
 	std::shared_ptr<FPTreeNode> get_child(int value) {
 		std::map<int, std::shared_ptr<FPTreeNode>>::iterator child_location =
 				children.find(value);
