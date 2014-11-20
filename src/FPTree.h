@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <fstream>
+#include <sstream>
 
 class FPTree {
 private:
@@ -40,14 +42,17 @@ public:
 	}
 
 	void build_fp_tree(const std::string& file_name) {
-		FILE* fp = fopen(file_name.c_str(), "r");
-		assert(fp != NULL);
+		std::ifstream fp(file_name);
+		assert(fp.is_open());
 
-		count_frequent_items(fp);
-		rewind(fp);
-		build_tree(fp);
+		auto transactions = read_file(fp);
 
-		fclose(fp);
+		build_fp_tree(transactions);
+	}
+
+	void build_fp_tree(const std::vector<std::string>& transactions) {
+		count_frequent_items(transactions);
+		build_tree(transactions);
 	}
 
 	std::vector<Pattern> fpgrowth(std::vector<int> prefix) {
@@ -62,13 +67,24 @@ public:
 	}
 
 private:
-	void count_frequent_items(FILE* fp) {
-		int read_item;
+	std::vector<std::string> read_file(std::ifstream& fp) {
+		std::vector<std::string> result;
+		std::string line;
+		while (std::getline(fp, line)) {
+			result.push_back(line);
+		}
+		return result;
+	}
 
-		while (fscanf(fp, "%d", &read_item) != EOF) {
-			auto& item = support_map[read_item];
-			item.set_value(read_item);
-			item.increment();
+	void count_frequent_items(const std::vector<std::string>& transactions) {
+		int read_item;
+		for (auto& transaction : transactions) {
+			std::stringstream ss(transaction);
+			while (ss >> read_item) {
+				auto& item = support_map[read_item];
+				item.set_value(read_item);
+				item.increment();
+			}
 		}
 
 		for (auto& item : support_map) {
@@ -109,10 +125,9 @@ private:
 		return return_set;
 	}
 
-	void build_tree(FILE* fp) {
-		std::vector<char> line(512);
-		while (fgets(&line[0], 512, fp)) {
-			auto transaction_items = extract_items(std::string(&line[0]));
+	void build_tree(const std::vector<std::string>& transactions) {
+		for (auto& transaction : transactions) {
+			auto transaction_items = extract_items(transaction);
 			// Remove aqueles que nao tem o suporte minimo
 			auto new_end =
 					std::remove_if(transaction_items.begin(),
@@ -172,6 +187,14 @@ private:
 			}
 
 			auto beta = std::vector<int>(prefix);
+			beta.push_back(it->get_value());
+
+			// Para cada item na lista do item que esta
+			// sendo analisado agora.
+			std::vector<std::vector<Item>> beta_tree_transactions;
+			for (auto& item_header : header_table[it->get_value()]) {
+
+			}
 
 			// Construir a arvore condicional
 
