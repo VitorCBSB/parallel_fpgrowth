@@ -37,6 +37,12 @@ private:
 	bool single_pathed = true;
 
 public:
+	FPTree(int minimum_support,
+			const std::vector<std::vector<Item>>& prefix_paths) :
+			minimum_support(minimum_support) {
+		build_from_prefix_paths(prefix_paths);
+	}
+
 	FPTree(int minimum_support) :
 			minimum_support(minimum_support) {
 	}
@@ -58,8 +64,7 @@ public:
 	std::vector<Pattern> fpgrowth(const std::vector<int>& prefix) {
 		std::vector<Pattern> result;
 		if (single_pathed) {
-			result = add_all_prefix_combinations(root,
-					prefix);
+			result = add_all_prefix_combinations(root, prefix);
 		} else {
 			result = multi_path_patterns(prefix);
 		}
@@ -67,6 +72,36 @@ public:
 	}
 
 private:
+	void build_from_prefix_paths(
+			const std::vector<std::vector<Item>>& prefix_paths) {
+		build_support_from_prefix_paths(prefix_paths);
+		build_tree_from_prefix_paths(prefix_paths);
+	}
+
+	void build_tree_from_prefix_paths(const std::vector<std::vector<Item>>& prefix_paths) {
+		for (auto& prefix_path : prefix_paths) {
+			auto& current_node = root;
+			auto count = prefix_path[0].get_count();
+			// Itera em ordem contraria,
+			// Ignorando o primeiro.
+			for (auto it = prefix_path.end() - 1; it != prefix_path.begin(); it++) {
+
+			}
+		}
+	}
+
+	void build_support_vector(const std::map<int, Item>& support_map) {
+		for (auto& item : support_map) {
+			support_vector.push_back(item.second);
+		}
+		std::sort(support_vector.begin(), support_vector.end(),
+				std::greater<Item>());
+		auto new_end =
+				std::remove_if(support_vector.begin(), support_vector.end(),
+						[=] (const Item& item) {return item.get_count() < minimum_support;});
+		support_vector.erase(new_end, support_vector.end());
+	}
+
 	std::vector<std::vector<int>> read_file(std::ifstream& fp) {
 		std::vector<std::vector<int>> result;
 		std::string line;
@@ -81,7 +116,8 @@ private:
 		return result;
 	}
 
-	void count_frequent_items(const std::vector<std::vector<int>>& transactions) {
+	void count_frequent_items(
+			const std::vector<std::vector<int>>& transactions) {
 		for (auto& transaction : transactions) {
 			for (auto& transaction_item : transaction) {
 				auto& item = support_map[transaction_item];
@@ -90,26 +126,16 @@ private:
 			}
 		}
 
-		for (auto& item : support_map) {
-			support_vector.push_back(item.second);
-		}
-		std::sort(support_vector.begin(), support_vector.end(),
-				std::greater<Item>());
-		auto new_end =
-				std::remove_if(support_vector.begin(), support_vector.end(),
-						[=] (const Item& item) {return item.get_count() < minimum_support;});
-		support_vector.erase(new_end, support_vector.end());
+		build_support_vector(support_map);
 	}
 
 	void build_tree(std::vector<std::vector<int>> transactions) {
 		for (auto& transaction : transactions) {
 			// Remove aqueles que nao tem o suporte minimo
-			auto new_end =
-					std::remove_if(transaction.begin(),
-							transaction.end(),
-							[&](const int& item) {
-								return support_map[item].get_count() < minimum_support;
-							});
+			auto new_end = std::remove_if(transaction.begin(),
+					transaction.end(), [&](const int& item) {
+						return support_map[item].get_count() < minimum_support;
+					});
 			transaction.erase(new_end, transaction.end());
 			std::sort(transaction.begin(), transaction.end(),
 					[&](const int& a, const int& b) {
@@ -165,10 +191,23 @@ private:
 
 			// Para cada item na lista do item que esta
 			// sendo analisado agora.
+			// Constroi uma lista de transacoes da arvore Beta.
+			//
+			// Atenção: o item base e colocado na lista tambem,
+			// mas ele nao deve estar la. Ele e ignorado na cons-
+			// trucao da nova FPTree Beta, so e usado para pegar
+			// seu count.
 			std::vector<std::vector<Item>> beta_tree_transactions;
 			for (auto& item_header : header_table[it->get_value()]) {
-
+				auto& current = item_header;
+				beta_tree_transactions.push_back(std::vector<Item>());
+				while (!current->is_root()) {
+					beta_tree_transactions.back().push_back(
+							current->get_item());
+				}
 			}
+
+			FPTree beta_tree(minimum_support, beta_tree_transactions);
 
 			// Construir a arvore condicional
 
@@ -187,7 +226,8 @@ private:
 			return result;
 		}
 		if (current->is_root()) {
-			return add_all_prefix_combinations(current->get_first_child(), prefix);
+			return add_all_prefix_combinations(current->get_first_child(),
+					prefix);
 		}
 
 		itemset.push_back(current->get_item().get_value());
@@ -197,11 +237,31 @@ private:
 			auto temp_result = add_all_prefix_combinations(
 					current->get_first_child(), itemset);
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
-			temp_result = add_all_prefix_combinations(current->get_first_child(),
-					prefix);
+			temp_result = add_all_prefix_combinations(
+					current->get_first_child(), prefix);
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
 		}
 		return result;
+	}
+
+	void build_support_from_prefix_paths(
+			const std::vector<std::vector<Item> >& prefix_paths) {
+		for (auto& prefix_path : prefix_paths) {
+			auto count = prefix_path[0].get_count();
+			// Pula o primeiro porque e o item que esta
+			// Sendo analisado, portanto nao interessa.
+			for (auto it = prefix_path.begin() + 1; it != prefix_path.end();
+					it++) {
+				// Ja existe no mapa?
+				if (support_map.find(it->get_value()) == support_map.end()) {
+					support_map[it->get_value()] = Item(it->value);
+					support_map[it->get_value()].count = count;
+				} else {
+					support_map[it->get_value()].count += count;
+				}
+			}
+		}
+		build_support_vector(support_map);
 	}
 };
 

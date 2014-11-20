@@ -9,11 +9,10 @@
 #define ITEM_H_
 
 class Item {
-private:
+public:
 	int count = 1;
 	int value;
 
-public:
 	Item() :
 			value(0) {
 	}
