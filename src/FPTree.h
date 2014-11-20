@@ -166,7 +166,11 @@ private:
 		// Para cada símbolo na tabela
 		for (auto it = support_vector.rbegin(); it != support_vector.rend();
 				it++) {
+			// Construir a arvore condicional
 
+			// Filtrar arvore condicional
+
+			// De alguma maneira recursiva, chamar o metodo para o resto.
 		}
 		return std::vector<Pattern>();
 	}
