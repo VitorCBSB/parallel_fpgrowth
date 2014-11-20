@@ -37,12 +37,6 @@ private:
 	bool single_pathed = true;
 
 public:
-	FPTree(int minimum_support,
-			const std::vector<std::vector<Item>>& prefix_paths) :
-			minimum_support(minimum_support) {
-		build_from_prefix_paths(prefix_paths);
-	}
-
 	FPTree(int minimum_support) :
 			minimum_support(minimum_support) {
 	}
@@ -72,6 +66,12 @@ public:
 	}
 
 private:
+	FPTree(int minimum_support,
+			const std::vector<std::vector<Item>>& prefix_paths) :
+			minimum_support(minimum_support) {
+		build_from_prefix_paths(prefix_paths);
+	}
+
 	void build_from_prefix_paths(
 			const std::vector<std::vector<Item>>& prefix_paths) {
 		build_support_from_prefix_paths(prefix_paths);
