@@ -50,15 +50,15 @@ public:
 		build_fp_tree(transactions);
 	}
 
-	void build_fp_tree(const std::vector<std::string>& transactions) {
+	void build_fp_tree(const std::vector<std::vector<int>>& transactions) {
 		count_frequent_items(transactions);
 		build_tree(transactions);
 	}
 
-	std::vector<Pattern> fpgrowth(std::vector<int> prefix) {
+	std::vector<Pattern> fpgrowth(const std::vector<int>& prefix) {
 		std::vector<Pattern> result;
 		if (single_pathed) {
-			result = add_all_prefix_combinations(root->get_first_child(),
+			result = add_all_prefix_combinations(root,
 					prefix);
 		} else {
 			result = multi_path_patterns(prefix);
@@ -67,22 +67,25 @@ public:
 	}
 
 private:
-	std::vector<std::string> read_file(std::ifstream& fp) {
-		std::vector<std::string> result;
+	std::vector<std::vector<int>> read_file(std::ifstream& fp) {
+		std::vector<std::vector<int>> result;
 		std::string line;
+		int read_item;
 		while (std::getline(fp, line)) {
-			result.push_back(line);
+			std::stringstream ss(line);
+			result.push_back(std::vector<int>());
+			while (ss >> read_item) {
+				result.back().push_back(read_item);
+			}
 		}
 		return result;
 	}
 
-	void count_frequent_items(const std::vector<std::string>& transactions) {
-		int read_item;
+	void count_frequent_items(const std::vector<std::vector<int>>& transactions) {
 		for (auto& transaction : transactions) {
-			std::stringstream ss(transaction);
-			while (ss >> read_item) {
-				auto& item = support_map[read_item];
-				item.set_value(read_item);
+			for (auto& transaction_item : transaction) {
+				auto& item = support_map[transaction_item];
+				item.set_value(transaction_item);
 				item.increment();
 			}
 		}
@@ -98,66 +101,38 @@ private:
 		support_vector.erase(new_end, support_vector.end());
 	}
 
-	std::vector<Item> extract_items(const std::string& line) {
-		std::vector<Item> return_set;
-		std::vector<std::string> strings;
-		const char* current;
-		int current_string = 0;
-
-		strings.push_back(std::string());
-		for (current = &line[0]; *current != '\n' && *current != '\0';
-				current++) {
-			// So insere uma nova string
-			// Se ainda houver numeros
-			if (*current == ' ' && *(current + 1) != '\n'
-					&& *(current + 1) != '\0') {
-				current_string++;
-				strings.push_back(std::string());
-				continue;
-			}
-			strings[current_string].push_back(*current);
-		}
-
-		for (const auto& string : strings) {
-			return_set.push_back(Item(atoi(string.c_str())));
-		}
-
-		return return_set;
-	}
-
-	void build_tree(const std::vector<std::string>& transactions) {
+	void build_tree(std::vector<std::vector<int>> transactions) {
 		for (auto& transaction : transactions) {
-			auto transaction_items = extract_items(transaction);
 			// Remove aqueles que nao tem o suporte minimo
 			auto new_end =
-					std::remove_if(transaction_items.begin(),
-							transaction_items.end(),
-							[&](const Item& item) {
-								return support_map[item.get_value()].get_count() < minimum_support;
+					std::remove_if(transaction.begin(),
+							transaction.end(),
+							[&](const int& item) {
+								return support_map[item].get_count() < minimum_support;
 							});
-			transaction_items.erase(new_end, transaction_items.end());
-			std::sort(transaction_items.begin(), transaction_items.end(),
-					[&](const Item& a, const Item& b) {
-						return support_map[a.get_value()] > support_map[b.get_value()];
+			transaction.erase(new_end, transaction.end());
+			std::sort(transaction.begin(), transaction.end(),
+					[&](const int& a, const int& b) {
+						return support_map[a] > support_map[b];
 					});
 
-			add_transaction(transaction_items);
+			add_transaction(transaction);
 		}
 	}
 
-	void add_transaction(const std::vector<Item>& transaction) {
+	void add_transaction(const std::vector<int>& transaction) {
 		auto current_node = root;
 		for (auto& item : transaction) {
-			auto child = current_node->get_child(item.get_value());
+			auto child = current_node->get_child(item);
 			// Se nao existe ainda, cria.
 			if (child == nullptr) {
 				auto new_node = FPTreeNodePtr(
-						new FPTreeNode(current_node, item));
+						new FPTreeNode(current_node, Item(item)));
 				new_node->set_parent(current_node);
 				current_node->add_child(new_node);
 
 				// Cria entrada na tabela de listas
-				header_table[item.get_value()].push_back(new_node);
+				header_table[item].push_back(new_node);
 
 				// Setta flag de single path para falso
 				// Caso a arvore tenha galhos
@@ -168,7 +143,6 @@ private:
 				// Setta o no corrente como filho
 				// Para proxima iteracao
 				current_node = new_node;
-
 			} else {
 				child->increment_item();
 				current_node = child;
@@ -177,7 +151,7 @@ private:
 	}
 
 	// TODO: fazer algoritmo de multi path
-	std::vector<Pattern> multi_path_patterns(std::vector<int> prefix) {
+	std::vector<Pattern> multi_path_patterns(const std::vector<int>& prefix) {
 		// Para cada símbolo na tabela
 		for (auto it = support_vector.rbegin(); it != support_vector.rend();
 				it++) {
@@ -205,18 +179,25 @@ private:
 		return std::vector<Pattern>();
 	}
 
-	std::vector<Pattern> add_all_prefix_combinations(FPTreeNodePtr root,
+	std::vector<Pattern> add_all_prefix_combinations(FPTreeNodePtr current,
 			const std::vector<int>& prefix) {
 		std::vector<Pattern> result;
 		auto itemset = std::vector<int>(prefix);
-		itemset.push_back(root->get_item().get_value());
+		if (current == nullptr) {
+			return result;
+		}
+		if (current->is_root()) {
+			return add_all_prefix_combinations(current->get_first_child(), prefix);
+		}
+
+		itemset.push_back(current->get_item().get_value());
 		result.push_back(Pattern(itemset));
 
-		if (root->has_children()) {
+		if (current->has_children()) {
 			auto temp_result = add_all_prefix_combinations(
-					root->get_first_child(), itemset);
+					current->get_first_child(), itemset);
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
-			temp_result = add_all_prefix_combinations(root->get_first_child(),
+			temp_result = add_all_prefix_combinations(current->get_first_child(),
 					prefix);
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
 		}

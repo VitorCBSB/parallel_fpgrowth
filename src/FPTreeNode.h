@@ -44,6 +44,10 @@ public:
 		return !children.empty();
 	}
 
+	bool is_root() {
+		return parent == nullptr;
+	}
+
 	Item get_item() {
 		return item;
 	}
