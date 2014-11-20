@@ -50,13 +50,13 @@ public:
 		fclose(fp);
 	}
 
-	std::vector<Pattern> fpgrowth() {
+	std::vector<Pattern> fpgrowth(std::vector<int> prefix) {
 		std::vector<Pattern> result;
 		if (single_pathed) {
 			result = add_all_prefix_combinations(root->get_first_child(),
-					std::vector<int>());
+					prefix);
 		} else {
-			result = multi_path_patterns();
+			result = multi_path_patterns(prefix);
 		}
 		return result;
 	}
@@ -162,10 +162,17 @@ private:
 	}
 
 	// TODO: fazer algoritmo de multi path
-	std::vector<Pattern> multi_path_patterns() {
+	std::vector<Pattern> multi_path_patterns(std::vector<int> prefix) {
 		// Para cada símbolo na tabela
 		for (auto it = support_vector.rbegin(); it != support_vector.rend();
 				it++) {
+			// Se o item nao for frequente, continua.
+			if (support_map[it->get_value()].get_count() < minimum_support) {
+				continue;
+			}
+
+			auto beta = std::vector<int>(prefix);
+
 			// Construir a arvore condicional
 
 			// Filtrar arvore condicional
