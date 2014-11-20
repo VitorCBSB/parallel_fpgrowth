@@ -16,15 +16,10 @@
 class Pattern {
 private:
 	std::vector<int> pattern_set;
-	int count = 1;
 
 public:
 	Pattern(std::vector<int> pattern_set) :
 			pattern_set(pattern_set) {
-	}
-
-	void increment() {
-		count++;
 	}
 
 	void print() {

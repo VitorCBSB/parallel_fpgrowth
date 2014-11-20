@@ -50,7 +50,6 @@ public:
 		fclose(fp);
 	}
 
-	// TODO: continuar
 	std::vector<Pattern> fpgrowth() {
 		std::vector<Pattern> result;
 		if (single_pathed) {
@@ -92,7 +91,10 @@ private:
 		strings.push_back(std::string());
 		for (current = &line[0]; *current != '\n' && *current != '\0';
 				current++) {
-			if (*current == ' ') {
+			// So insere uma nova string
+			// Se ainda houver numeros
+			if (*current == ' ' && *(current + 1) != '\n'
+					&& *(current + 1) != '\0') {
 				current_string++;
 				strings.push_back(std::string());
 				continue;
@@ -161,6 +163,11 @@ private:
 
 	// TODO: fazer algoritmo de multi path
 	std::vector<Pattern> multi_path_patterns() {
+		// Para cada símbolo na tabela
+		for (auto it = support_vector.rbegin(); it != support_vector.rend();
+				it++) {
+
+		}
 		return std::vector<Pattern>();
 	}
 
@@ -172,9 +179,11 @@ private:
 		result.push_back(Pattern(itemset));
 
 		if (root->has_children()) {
-			auto temp_result = add_all_prefix_combinations(root->get_first_child(), itemset);
+			auto temp_result = add_all_prefix_combinations(
+					root->get_first_child(), itemset);
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
-			temp_result = add_all_prefix_combinations(root->get_first_child(), prefix);
+			temp_result = add_all_prefix_combinations(root->get_first_child(),
+					prefix);
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
 		}
 		return result;
