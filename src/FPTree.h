@@ -262,7 +262,7 @@ private:
 					prefix);
 		}
 
-		itemset.push_back(current->get_item().value);
+		itemset.push_front(current->get_item().value);
 		result.push_back(Pattern(itemset, current->get_item().count));
 
 		if (current->has_children()) {
