@@ -8,18 +8,18 @@
 #ifndef PATTERN_H_
 #define PATTERN_H_
 
-#include <vector>
+#include <list>
 #include <iostream>
 #include <string>
 #include "Item.h"
 
 class Pattern {
 private:
-	std::vector<int> pattern_set;
+	std::list<int> pattern_set;
 	int count;
 
 public:
-	Pattern(std::vector<int> pattern_set, int count) :
+	Pattern(std::list<int> pattern_set, int count) :
 			pattern_set(pattern_set), count(count) {
 	}
 
@@ -27,7 +27,9 @@ public:
 		std::cout << '[';
 		for (auto it = pattern_set.begin(); it != pattern_set.end(); it++) {
 			std::cout << *it;
-			if ((it + 1) == pattern_set.end()) {
+			auto next_item = it;
+			next_item++;
+			if (next_item == pattern_set.end()) {
 				std::cout << "";
 			} else {
 				std::cout << ", ";

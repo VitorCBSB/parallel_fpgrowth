@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <string.h>
 #include <memory>
-#include <vector>
 #include <map>
 #include <list>
 #include <string>
@@ -30,7 +29,7 @@ private:
 	FPTreeNodePtr root = FPTreeNodePtr(new FPTreeNode(nullptr, Item(0)));
 	std::map<int, std::list<FPTreeNodePtr>> header_table;
 
-	std::vector<Item> support_vector;
+	std::list<Item> support_list;
 	std::map<int, Item> support_map;
 	int minimum_support;
 
@@ -50,13 +49,13 @@ public:
 		build_fp_tree(transactions);
 	}
 
-	void build_fp_tree(const std::vector<std::vector<int>>& transactions) {
+	void build_fp_tree(const std::list<std::list<int>>& transactions) {
 		count_frequent_items(transactions);
 		build_tree(transactions);
 	}
 
-	std::vector<Pattern> fpgrowth(const std::vector<int>& prefix) {
-		std::vector<Pattern> result;
+	std::list<Pattern> fpgrowth(const std::list<int>& prefix) {
+		std::list<Pattern> result;
 		if (single_pathed) {
 			result = add_all_prefix_combinations(root, prefix);
 		} else {
@@ -65,28 +64,35 @@ public:
 		return result;
 	}
 
+	void print() {
+		root->print();
+	}
+
 private:
-	FPTree(int minimum_support,
-			const std::vector<std::vector<Item>>& prefix_paths) :
+	FPTree(int minimum_support, const std::list<std::list<Item>>& prefix_paths) :
 			minimum_support(minimum_support) {
 		build_from_prefix_paths(prefix_paths);
 	}
 
 	void build_from_prefix_paths(
-			const std::vector<std::vector<Item>>& prefix_paths) {
+			const std::list<std::list<Item>>& prefix_paths) {
 		build_support_from_prefix_paths(prefix_paths);
 		build_tree_from_prefix_paths(prefix_paths);
 	}
 
-	void build_tree_from_prefix_paths(const std::vector<std::vector<Item>>& prefix_paths) {
+	void build_tree_from_prefix_paths(
+			const std::list<std::list<Item>>& prefix_paths) {
 		for (auto& prefix_path : prefix_paths) {
-			auto& current_node = root;
-			auto count = prefix_path[0].count;
+			auto current_node = root;
+			auto count = prefix_path.front().count;
 			// Itera em ordem contraria,
 			// Ignorando o primeiro.
-			for (auto it = prefix_path.end() - 1; it != prefix_path.begin(); it++) {
+			auto path_end = prefix_path.rend();
+			path_end--;
+			for (auto it = prefix_path.rbegin(); it != path_end; it++) {
 				// Pula items infrequentes.
-				if (support_map[it->value].count < minimum_support) {
+				if (support_map.find(it->value) == support_map.end()
+						|| support_map[it->value].count < minimum_support) {
 					continue;
 				}
 
@@ -117,25 +123,24 @@ private:
 		}
 	}
 
-	void build_support_vector(const std::map<int, Item>& support_map) {
+	void build_support_list(const std::map<int, Item>& support_map) {
 		for (auto& item : support_map) {
-			support_vector.push_back(item.second);
+			support_list.push_back(item.second);
 		}
-		std::sort(support_vector.begin(), support_vector.end(),
-				std::greater<Item>());
+		support_list.sort(std::greater<Item>());
 		auto new_end =
-				std::remove_if(support_vector.begin(), support_vector.end(),
-						[=] (const Item& item) {return item.count < minimum_support;});
-		support_vector.erase(new_end, support_vector.end());
+				std::remove_if(support_list.begin(), support_list.end(),
+						[&] (const Item& item) {return item.count < minimum_support;});
+		support_list.erase(new_end, support_list.end());
 	}
 
-	std::vector<std::vector<int>> read_file(std::ifstream& fp) {
-		std::vector<std::vector<int>> result;
+	std::list<std::list<int>> read_file(std::ifstream& fp) {
+		std::list<std::list<int>> result;
 		std::string line;
 		int read_item;
 		while (std::getline(fp, line)) {
 			std::stringstream ss(line);
-			result.push_back(std::vector<int>());
+			result.push_back(std::list<int>());
 			while (ss >> read_item) {
 				result.back().push_back(read_item);
 			}
@@ -143,8 +148,7 @@ private:
 		return result;
 	}
 
-	void count_frequent_items(
-			const std::vector<std::vector<int>>& transactions) {
+	void count_frequent_items(const std::list<std::list<int>>& transactions) {
 		for (auto& transaction : transactions) {
 			for (auto& transaction_item : transaction) {
 				auto& item = support_map[transaction_item];
@@ -153,27 +157,27 @@ private:
 			}
 		}
 
-		build_support_vector(support_map);
+		build_support_list(support_map);
 	}
 
-	void build_tree(std::vector<std::vector<int>> transactions) {
+	void build_tree(const std::list<std::list<int>>& transactions) {
 		for (auto& transaction : transactions) {
+			auto transaction_copy = std::list<int>(transaction);
 			// Remove aqueles que nao tem o suporte minimo
-			auto new_end = std::remove_if(transaction.begin(),
-					transaction.end(), [&](const int& item) {
+			auto new_end = std::remove_if(transaction_copy.begin(),
+					transaction_copy.end(), [&](const int& item) {
 						return support_map[item].count < minimum_support;
 					});
-			transaction.erase(new_end, transaction.end());
-			std::sort(transaction.begin(), transaction.end(),
-					[&](const int& a, const int& b) {
-						return support_map[a] > support_map[b];
-					});
+			transaction_copy.erase(new_end, transaction_copy.end());
+			transaction_copy.sort([&](const int& a, const int& b) {
+				return support_map[a] > support_map[b];
+			});
 
 			add_transaction(transaction);
 		}
 	}
 
-	void add_transaction(const std::vector<int>& transaction) {
+	void add_transaction(const std::list<int>& transaction) {
 		auto current_node = root;
 		for (auto& item : transaction) {
 			auto child = current_node->get_child(item);
@@ -202,19 +206,17 @@ private:
 		}
 	}
 
-	// TODO: fazer algoritmo de multi path
-	std::vector<Pattern> multi_path_patterns(const std::vector<int>& prefix) {
-		std::vector<Pattern> result;
+	std::list<Pattern> multi_path_patterns(const std::list<int>& prefix) {
+		std::list<Pattern> result;
 		// Para cada símbolo na tabela
-		for (auto it = support_vector.rbegin(); it != support_vector.rend();
-				it++) {
+		for (auto it = support_list.rbegin(); it != support_list.rend(); it++) {
 			// Se o item nao for frequente, continua.
 			if (support_map[it->value].count < minimum_support) {
 				continue;
 			}
 
-			auto beta = std::vector<int>(prefix);
-			beta.push_back(it->value);
+			auto beta = std::list<int>(prefix);
+			beta.push_front(it->value);
 			auto pattern = Pattern(beta, support_map[it->value].count);
 			result.push_back(pattern);
 
@@ -226,30 +228,32 @@ private:
 			// mas ele nao deve estar la. Ele e ignorado na cons-
 			// trucao da nova FPTree Beta, so e usado para pegar
 			// seu count.
-			std::vector<std::vector<Item>> beta_tree_transactions;
+			std::list<std::list<Item>> beta_tree_prefix_paths;
 			for (auto& item_header : header_table[it->value]) {
 				auto& current = item_header;
-				beta_tree_transactions.push_back(std::vector<Item>());
+				beta_tree_prefix_paths.push_back(std::list<Item>());
 				while (!current->is_root()) {
-					beta_tree_transactions.back().push_back(
+					beta_tree_prefix_paths.back().push_back(
 							current->get_item());
+					current = current->get_parent();
 				}
 			}
 
-			FPTree beta_tree(minimum_support, beta_tree_transactions);
+			FPTree beta_tree(minimum_support, beta_tree_prefix_paths);
 
 			if (!beta_tree.is_null()) {
 				auto temp_result = beta_tree.fpgrowth(beta);
-				result.insert(result.end(), temp_result.begin(), temp_result.end());
+				result.insert(result.end(), temp_result.begin(),
+						temp_result.end());
 			}
 		}
 		return result;
 	}
 
-	std::vector<Pattern> add_all_prefix_combinations(FPTreeNodePtr current,
-			const std::vector<int>& prefix) {
-		std::vector<Pattern> result;
-		auto itemset = std::vector<int>(prefix);
+	std::list<Pattern> add_all_prefix_combinations(FPTreeNodePtr current,
+			const std::list<int>& prefix) {
+		std::list<Pattern> result;
+		auto itemset = std::list<int>(prefix);
 		if (current == nullptr) {
 			return result;
 		}
@@ -273,13 +277,14 @@ private:
 	}
 
 	void build_support_from_prefix_paths(
-			const std::vector<std::vector<Item> >& prefix_paths) {
+			const std::list<std::list<Item> >& prefix_paths) {
 		for (auto& prefix_path : prefix_paths) {
-			auto count = prefix_path[0].count;
+			auto count = prefix_path.front().count;
 			// Pula o primeiro porque e o item que esta
 			// Sendo analisado, portanto nao interessa.
-			for (auto it = prefix_path.begin() + 1; it != prefix_path.end();
-					it++) {
+			auto list_begin = prefix_path.begin();
+			list_begin++;
+			for (auto it = list_begin; it != prefix_path.end(); it++) {
 				// Ja existe no mapa?
 				if (support_map.find(it->value) == support_map.end()) {
 					support_map[it->value] = Item(it->value);
@@ -289,7 +294,7 @@ private:
 				}
 			}
 		}
-		build_support_vector(support_map);
+		build_support_list(support_map);
 	}
 
 	bool is_null() {

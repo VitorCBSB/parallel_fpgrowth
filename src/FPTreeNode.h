@@ -29,11 +29,15 @@ public:
 	}
 
 	void add_child(std::shared_ptr<FPTreeNode> child) {
-		children[child->item.get_value()] = child;
+		children[child->item.value] = child;
 	}
 
 	void set_parent(std::shared_ptr<FPTreeNode> parent) {
 		this->parent = parent;
+	}
+
+	std::shared_ptr<FPTreeNode> get_parent() {
+		return parent;
 	}
 
 	bool single_pathed() {
@@ -66,6 +70,17 @@ public:
 			return nullptr;
 		}
 		return (*child_location).second;
+	}
+
+	void print() {
+		if (!is_root()) {
+			std::cout << item.value << '(' << item.count << ')' << ' ';
+		}
+
+		for (auto& child : children) {
+			child.second->print();
+		}
+		std::cout << std::endl;
 	}
 
 };

@@ -8,6 +8,8 @@
 #ifndef ITEM_H_
 #define ITEM_H_
 
+#include <iostream>
+
 class Item {
 public:
 	int count = 1;
@@ -43,6 +45,10 @@ public:
 
 	bool operator>(const Item& outro) const {
 		return count > outro.count;
+	}
+
+	void print() {
+		std::cout << '(' << value << ", " << count << ')';
 	}
 };
 
