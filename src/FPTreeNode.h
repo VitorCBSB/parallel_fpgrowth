@@ -48,7 +48,7 @@ public:
 		return parent == nullptr;
 	}
 
-	Item get_item() {
+	Item& get_item() {
 		return item;
 	}
 

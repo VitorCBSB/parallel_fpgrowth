@@ -16,10 +16,11 @@
 class Pattern {
 private:
 	std::vector<int> pattern_set;
+	int count;
 
 public:
-	Pattern(std::vector<int> pattern_set) :
-			pattern_set(pattern_set) {
+	Pattern(std::vector<int> pattern_set, int count) :
+			pattern_set(pattern_set), count(count) {
 	}
 
 	void print() {
@@ -32,7 +33,7 @@ public:
 				std::cout << ", ";
 			}
 		}
-		std::cout << ']';
+		std::cout << "] : " << count;
 	}
 };
 

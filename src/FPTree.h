@@ -81,11 +81,38 @@ private:
 	void build_tree_from_prefix_paths(const std::vector<std::vector<Item>>& prefix_paths) {
 		for (auto& prefix_path : prefix_paths) {
 			auto& current_node = root;
-			auto count = prefix_path[0].get_count();
+			auto count = prefix_path[0].count;
 			// Itera em ordem contraria,
 			// Ignorando o primeiro.
 			for (auto it = prefix_path.end() - 1; it != prefix_path.begin(); it++) {
+				// Pula items infrequentes.
+				if (support_map[it->value].count < minimum_support) {
+					continue;
+				}
 
+				auto child = current_node->get_child(it->value);
+				if (child == nullptr) {
+					auto new_node = FPTreeNodePtr(
+							new FPTreeNode(current_node, *it));
+					new_node->get_item().count = count; // Atualiza suporte.
+					current_node->add_child(new_node);
+
+					// Cria entrada na tabela de listas
+					header_table[it->value].push_back(new_node);
+
+					// Setta flag de single path para falso
+					// Caso a arvore tenha galhos
+					if (single_pathed && !current_node->single_pathed()) {
+						single_pathed = false;
+					}
+
+					// Setta o no corrente como filho
+					// Para proxima iteracao
+					current_node = new_node;
+				} else {
+					child->get_item().count += count;
+					current_node = child;
+				}
 			}
 		}
 	}
@@ -98,7 +125,7 @@ private:
 				std::greater<Item>());
 		auto new_end =
 				std::remove_if(support_vector.begin(), support_vector.end(),
-						[=] (const Item& item) {return item.get_count() < minimum_support;});
+						[=] (const Item& item) {return item.count < minimum_support;});
 		support_vector.erase(new_end, support_vector.end());
 	}
 
@@ -134,7 +161,7 @@ private:
 			// Remove aqueles que nao tem o suporte minimo
 			auto new_end = std::remove_if(transaction.begin(),
 					transaction.end(), [&](const int& item) {
-						return support_map[item].get_count() < minimum_support;
+						return support_map[item].count < minimum_support;
 					});
 			transaction.erase(new_end, transaction.end());
 			std::sort(transaction.begin(), transaction.end(),
@@ -154,7 +181,6 @@ private:
 			if (child == nullptr) {
 				auto new_node = FPTreeNodePtr(
 						new FPTreeNode(current_node, Item(item)));
-				new_node->set_parent(current_node);
 				current_node->add_child(new_node);
 
 				// Cria entrada na tabela de listas
@@ -178,16 +204,19 @@ private:
 
 	// TODO: fazer algoritmo de multi path
 	std::vector<Pattern> multi_path_patterns(const std::vector<int>& prefix) {
+		std::vector<Pattern> result;
 		// Para cada símbolo na tabela
 		for (auto it = support_vector.rbegin(); it != support_vector.rend();
 				it++) {
 			// Se o item nao for frequente, continua.
-			if (support_map[it->get_value()].get_count() < minimum_support) {
+			if (support_map[it->value].count < minimum_support) {
 				continue;
 			}
 
 			auto beta = std::vector<int>(prefix);
-			beta.push_back(it->get_value());
+			beta.push_back(it->value);
+			auto pattern = Pattern(beta, support_map[it->value].count);
+			result.push_back(pattern);
 
 			// Para cada item na lista do item que esta
 			// sendo analisado agora.
@@ -198,7 +227,7 @@ private:
 			// trucao da nova FPTree Beta, so e usado para pegar
 			// seu count.
 			std::vector<std::vector<Item>> beta_tree_transactions;
-			for (auto& item_header : header_table[it->get_value()]) {
+			for (auto& item_header : header_table[it->value]) {
 				auto& current = item_header;
 				beta_tree_transactions.push_back(std::vector<Item>());
 				while (!current->is_root()) {
@@ -209,13 +238,12 @@ private:
 
 			FPTree beta_tree(minimum_support, beta_tree_transactions);
 
-			// Construir a arvore condicional
-
-			// Filtrar arvore condicional
-
-			// De alguma maneira recursiva, chamar o metodo para o resto.
+			if (!beta_tree.is_null()) {
+				auto temp_result = beta_tree.fpgrowth(beta);
+				result.insert(result.end(), temp_result.begin(), temp_result.end());
+			}
 		}
-		return std::vector<Pattern>();
+		return result;
 	}
 
 	std::vector<Pattern> add_all_prefix_combinations(FPTreeNodePtr current,
@@ -230,8 +258,8 @@ private:
 					prefix);
 		}
 
-		itemset.push_back(current->get_item().get_value());
-		result.push_back(Pattern(itemset));
+		itemset.push_back(current->get_item().value);
+		result.push_back(Pattern(itemset, current->get_item().count));
 
 		if (current->has_children()) {
 			auto temp_result = add_all_prefix_combinations(
@@ -247,21 +275,25 @@ private:
 	void build_support_from_prefix_paths(
 			const std::vector<std::vector<Item> >& prefix_paths) {
 		for (auto& prefix_path : prefix_paths) {
-			auto count = prefix_path[0].get_count();
+			auto count = prefix_path[0].count;
 			// Pula o primeiro porque e o item que esta
 			// Sendo analisado, portanto nao interessa.
 			for (auto it = prefix_path.begin() + 1; it != prefix_path.end();
 					it++) {
 				// Ja existe no mapa?
-				if (support_map.find(it->get_value()) == support_map.end()) {
-					support_map[it->get_value()] = Item(it->value);
-					support_map[it->get_value()].count = count;
+				if (support_map.find(it->value) == support_map.end()) {
+					support_map[it->value] = Item(it->value);
+					support_map[it->value].count = count;
 				} else {
-					support_map[it->get_value()].count += count;
+					support_map[it->value].count += count;
 				}
 			}
 		}
 		build_support_vector(support_map);
+	}
+
+	bool is_null() {
+		return !root->has_children();
 	}
 };
 
