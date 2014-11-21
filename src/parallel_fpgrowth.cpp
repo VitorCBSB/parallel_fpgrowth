@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
 
 	t1 = std::chrono::high_resolution_clock::now();
 	auto things = tree.fpgrowth(std::list<int>());
-	t1 = std::chrono::high_resolution_clock::now();
+	t2 = std::chrono::high_resolution_clock::now();
 
 	for (auto& thing : things) {
 		thing.print();
