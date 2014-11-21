@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string>
+#include <chrono>
 #include "FPTree.h"
 
 int main(int argc, char* argv[]) {
@@ -22,13 +23,26 @@ int main(int argc, char* argv[]) {
 
 	FPTree tree(minimum_support);
 
+	auto t1 = std::chrono::high_resolution_clock::now();
 	tree.build_fp_tree(file_name);
+	auto t2 = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Duracao construcao: "
+			<< std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+			<< std::endl;
+
+	t1 = std::chrono::high_resolution_clock::now();
 	auto things = tree.fpgrowth(std::list<int>());
+	t1 = std::chrono::high_resolution_clock::now();
 
 	for (auto& thing : things) {
 		thing.print();
 		std::cout << std::endl;
 	}
+
+	std::cout << "Duracao extracao: "
+			<< std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+			<< std::endl;
 
 	return 0;
 }
