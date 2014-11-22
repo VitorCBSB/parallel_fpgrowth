@@ -35,7 +35,7 @@ private:
 	int minimum_support;
 
 	bool single_pathed = true;
-	static bool disparar;
+	static bool launch_threads;
 
 public:
 	FPTree(int minimum_support) :

@@ -7,7 +7,7 @@
 
 #include "FPTree.h"
 
-bool FPTree::disparar = true;
+bool FPTree::launch_threads = false;
 
 FPTree::FPTree(int minimum_support,
 		const std::list<std::list<Item>>& prefix_paths) :
@@ -150,11 +150,11 @@ void FPTree::add_transaction(const std::list<int>& transaction) {
 std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 	std::list<Pattern> result;
 	// Para cada símbolo na tabela
-#pragma omp parallel for if(disparar)
+#pragma omp parallel for if(launch_threads)
 	for (auto it = support_list.rbegin(); it < support_list.rend(); it++) {
 		// Setta a flag de disparar threads para falso.
 		// So queremos disparar threads na primeira execucao.
-		disparar = false;
+		launch_threads = false;
 
 		// Se o item nao for frequente, continua.
 		if (support_map[it->value].count < minimum_support) {
