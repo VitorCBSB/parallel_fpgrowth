@@ -7,6 +7,8 @@
 
 #include "FPTree.h"
 
+bool FPTree::disparar = true;
+
 FPTree::FPTree(int minimum_support,
 		const std::list<std::list<Item>>& prefix_paths) :
 		minimum_support(minimum_support) {
@@ -66,7 +68,7 @@ void FPTree::build_support_list(const std::map<int, Item>& support_map) {
 	for (auto& item : support_map) {
 		support_list.push_back(item.second);
 	}
-	support_list.sort(std::greater<Item>());
+	std::sort(support_list.begin(), support_list.end(), std::greater<Item>());
 	auto new_end = std::remove_if(support_list.begin(), support_list.end(),
 			[&] (const Item& item) {return item.count < minimum_support;});
 	support_list.erase(new_end, support_list.end());
@@ -148,7 +150,12 @@ void FPTree::add_transaction(const std::list<int>& transaction) {
 std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 	std::list<Pattern> result;
 	// Para cada símbolo na tabela
-	for (auto it = support_list.rbegin(); it != support_list.rend(); it++) {
+#pragma omp parallel for if(disparar)
+	for (auto it = support_list.rbegin(); it < support_list.rend(); it++) {
+		// Setta a flag de disparar threads para falso.
+		// So queremos disparar threads na primeira execucao.
+		disparar = false;
+
 		// Se o item nao for frequente, continua.
 		if (support_map[it->value].count < minimum_support) {
 			continue;
@@ -157,6 +164,7 @@ std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 		auto beta = std::list<int>(prefix);
 		beta.push_front(it->value);
 		auto pattern = Pattern(beta, support_map[it->value].count);
+#pragma omp critical
 		result.push_back(pattern);
 
 		// Para cada item na lista do item que esta
@@ -181,6 +189,7 @@ std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 
 		if (!beta_tree.is_null()) {
 			auto temp_result = beta_tree.fpgrowth(beta);
+#pragma omp critical
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
 		}
 	}

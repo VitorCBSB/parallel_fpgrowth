@@ -30,11 +30,12 @@ private:
 	FPTreeNodePtr root = FPTreeNodePtr(new FPTreeNode(nullptr, Item(0)));
 	std::map<int, std::list<FPTreeNodePtr>> header_table;
 
-	std::list<Item> support_list;
+	std::vector<Item> support_list;
 	std::map<int, Item> support_map;
 	int minimum_support;
 
 	bool single_pathed = true;
+	static bool disparar;
 
 public:
 	FPTree(int minimum_support) :
