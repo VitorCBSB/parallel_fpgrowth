@@ -28,11 +28,6 @@ int main(int argc, char* argv[]) {
 	auto things = tree.fpgrowth(std::list<int>());
 	auto t2 = std::chrono::high_resolution_clock::now();
 
-	for (auto& thing : things) {
-		thing.print();
-		std::cout << std::endl;
-	}
-
 	std::cout
 			<< std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
 			<< std::endl;
