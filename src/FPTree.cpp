@@ -7,7 +7,7 @@
 
 #include "FPTree.h"
 
-bool FPTree::launch_threads = false;
+bool FPTree::launch_threads = true;
 
 FPTree::FPTree(int minimum_support,
 		const std::list<std::list<Item>>& prefix_paths) :
