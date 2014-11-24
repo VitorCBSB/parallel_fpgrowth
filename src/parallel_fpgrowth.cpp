@@ -13,7 +13,7 @@
 
 int main(int argc, char* argv[]) {
 	if (argc < 3) {
-		std::cout << "Uso: " << argv[0] << " arquivo_entrada suporte_minimo"
+		std::cout << "Uso: " << argv[0] << " arquivo_entrada suporte_minimo num_threads"
 				<< std::endl;
 		exit(0);
 	}
