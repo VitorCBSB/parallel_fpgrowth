@@ -150,7 +150,7 @@ void FPTree::add_transaction(const std::list<int>& transaction) {
 std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 	std::list<Pattern> result;
 	// Para cada símbolo na tabela
-#pragma omp parallel for if(launch_threads)
+#pragma omp parallel for if(launch_threads) num_threads(num_threads)
 	for (auto it = support_list.rbegin(); it < support_list.rend(); it++) {
 		// Setta a flag de disparar threads para falso.
 		// So queremos disparar threads na primeira execucao.

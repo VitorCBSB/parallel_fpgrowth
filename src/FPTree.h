@@ -33,13 +33,15 @@ private:
 	std::vector<Item> support_list;
 	std::map<int, Item> support_map;
 	int minimum_support;
+	int num_threads = 4;
 
 	bool single_pathed = true;
+
 	static bool launch_threads;
 
 public:
-	FPTree(int minimum_support) :
-			minimum_support(minimum_support) {
+	FPTree(int minimum_support, int num_threads = 4) :
+			minimum_support(minimum_support), num_threads(num_threads) {
 	}
 
 	void build_fp_tree(const std::string& file_name);

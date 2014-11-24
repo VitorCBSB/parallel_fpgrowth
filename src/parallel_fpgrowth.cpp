@@ -21,7 +21,13 @@ int main(int argc, char* argv[]) {
 	int minimum_support;
 	sscanf(argv[2], "%d", &minimum_support);
 
-	FPTree tree(minimum_support);
+	int num_threads = 4;
+
+	if (argc >= 4) {
+		sscanf(argv[3], "%d", &num_threads);
+	}
+
+	FPTree tree(minimum_support, num_threads);
 
 	auto t1 = std::chrono::high_resolution_clock::now();
 	tree.build_fp_tree(file_name);
