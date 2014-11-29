@@ -7,7 +7,7 @@
 
 #include "FPTree.h"
 
-bool FPTree::launch_threads = true;
+bool FPTree::launch_threads = false;
 
 FPTree::FPTree(int minimum_support,
 		const std::list<std::list<Item>>& prefix_paths) :
@@ -114,7 +114,7 @@ void FPTree::build_tree(const std::list<std::list<int>>& transactions) {
 			return support_map[a] > support_map[b];
 		});
 
-		add_transaction(transaction);
+		add_transaction(transaction_copy);
 	}
 }
 
@@ -150,7 +150,7 @@ void FPTree::add_transaction(const std::list<int>& transaction) {
 std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 	std::list<Pattern> result;
 	// Para cada símbolo na tabela
-#pragma omp parallel for if(launch_threads) num_threads(num_threads)
+//#pragma omp parallel for if(launch_threads) num_threads(num_threads)
 	for (auto it = support_list.rbegin(); it < support_list.rend(); it++) {
 		// Setta a flag de disparar threads para falso.
 		// So queremos disparar threads na primeira execucao.
@@ -164,7 +164,7 @@ std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 		auto beta = std::list<int>(prefix);
 		beta.push_front(it->value);
 		auto pattern = Pattern(beta, support_map[it->value].count);
-#pragma omp critical
+//#pragma omp critical
 		result.push_back(pattern);
 
 		// Para cada item na lista do item que esta
@@ -177,7 +177,7 @@ std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 		// seu count.
 		std::list<std::list<Item>> beta_tree_prefix_paths;
 		for (auto& item_header : header_table[it->value]) {
-			auto& current = item_header;
+			auto current = item_header;
 			beta_tree_prefix_paths.push_back(std::list<Item>());
 			while (!current->is_root()) {
 				beta_tree_prefix_paths.back().push_back(current->get_item());
@@ -189,7 +189,7 @@ std::list<Pattern> FPTree::multi_path_patterns(const std::list<int>& prefix) {
 
 		if (!beta_tree.is_null()) {
 			auto temp_result = beta_tree.fpgrowth(beta);
-#pragma omp critical
+//#pragma omp critical
 			result.insert(result.end(), temp_result.begin(), temp_result.end());
 		}
 	}

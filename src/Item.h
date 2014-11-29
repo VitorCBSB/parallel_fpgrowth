@@ -16,7 +16,7 @@ public:
 	int value;
 
 	Item() :
-			value(0) {
+			count(0), value(0) {
 	}
 
 	Item(int value) :
